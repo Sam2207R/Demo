@@ -52,32 +52,111 @@
     </div>
   </header>
 
-  <!-- ============ SEARCH BAR ============ -->
-  <section class="bg-gradient-to-b from-gob-200 to-white border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <form id="searchForm" class="max-w-3xl mx-auto" autocomplete="off" onsubmit="return false;">
-        <div class="relative flex items-center">
-          <svg class="absolute left-4 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+  <!-- ============ HERO / PORTADA ============ -->
+  <section class="relative overflow-hidden bg-gradient-to-br from-gob-800 via-[#A00808] to-gob-700 text-white">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+      <div class="absolute bottom-10 right-10 w-96 h-96 bg-gob-400 rounded-full blur-3xl"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] border border-white/20 rounded-full"></div>
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-20">
+      <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+        <!-- Illustration -->
+        <div class="flex-shrink-0 w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 relative">
+          <svg class="w-full h-full drop-shadow-2xl" viewBox="0 0 320 320" fill="none">
+            <!-- Círculo decorativo fondo -->
+            <circle cx="160" cy="160" r="150" fill="white" fill-opacity="0.08"/>
+            <circle cx="160" cy="160" r="130" fill="white" fill-opacity="0.06"/>
+            <circle cx="160" cy="160" r="100" fill="white" fill-opacity="0.15"/>
+
+            <!-- Lupa grande -->
+            <circle cx="145" cy="130" r="60" stroke="white" stroke-width="8" fill="none" opacity="0.95"/>
+            <circle cx="145" cy="130" r="60" stroke="white" stroke-width="8" fill="none" opacity="0.95"/>
+            <line x1="188" y1="173" x2="228" y2="213" stroke="white" stroke-width="8" stroke-linecap="round" opacity="0.95"/>
+
+            <!-- Documento pequeño -->
+            <rect x="195" y="105" width="40" height="50" rx="4" fill="white" fill-opacity="0.2" stroke="white" stroke-width="2.5"/>
+            <line x1="203" y1="118" x2="227" y2="118" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+            <line x1="203" y1="127" x2="225" y2="127" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+            <line x1="203" y1="136" x2="220" y2="136" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+
+            <!-- Documento grande -->
+            <rect x="60" y="175" width="48" height="60" rx="4" fill="white" fill-opacity="0.2" stroke="white" stroke-width="2.5"/>
+            <line x1="69" y1="190" x2="99" y2="190" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+            <line x1="69" y1="200" x2="97" y2="200" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+            <line x1="69" y1="210" x2="92" y2="210" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+            <line x1="69" y1="220" x2="95" y2="220" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+
+            <!-- Estrella / símbolo -->
+            <path d="M160 30 L165 50 L185 50 L169 62 L175 82 L160 70 L145 82 L151 62 L135 50 L155 50 Z" fill="white" fill-opacity="0.3" transform="translate(-5, 5) scale(0.8)"/>
+
+            <!-- Puntitos decorativos -->
+            <circle cx="260" cy="80" r="3" fill="white" fill-opacity="0.4"/>
+            <circle cx="280" cy="120" r="2" fill="white" fill-opacity="0.3"/>
+            <circle cx="40" cy="60" r="2.5" fill="white" fill-opacity="0.35"/>
+            <circle cx="270" cy="230" r="2" fill="white" fill-opacity="0.25"/>
+            <circle cx="50" cy="260" r="3" fill="white" fill-opacity="0.3"/>
+            <circle cx="230" cy="260" r="2" fill="white" fill-opacity="0.2"/>
+
+            <!-- Líneas decorativas curvas -->
+            <path d="M20 280 Q60 240 100 260" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.2"/>
+            <path d="M220 270 Q260 250 290 270" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.2"/>
           </svg>
-          <input
-            id="searchInput"
-            type="text"
-            class="w-full pl-12 pr-4 py-3.5 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-xl shadow-sm focus:border-gob-800 focus:ring-2 focus:ring-gob-800/20 outline-none transition-all"
-            placeholder="Busca trámites, servicios, noticias, normas..."
-          >
-          <button type="submit" class="absolute right-2 inline-flex items-center gap-1.5 px-5 py-2 bg-gob-800 text-white font-semibold rounded-lg hover:bg-[#A00808] active:scale-[0.97] transition-all shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <span class="hidden sm:inline">Buscar</span>
-          </button>
         </div>
-        <p class="mt-2 text-xs text-gray-500 text-center sm:text-left">Ej: <button type="button" class="text-gob-800 underline hover:text-gob-700 cursor-pointer" onclick="setSearch('DNI electrónico')">DNI electrónico</button>, <button type="button" class="text-gob-800 underline hover:text-gob-700 cursor-pointer" onclick="setSearch('brevete')">brevete</button>, <button type="button" class="text-gob-800 underline hover:text-gob-700 cursor-pointer" onclick="setSearch('salud')">salud</button></p>
+
+        <!-- Content -->
+        <div class="flex-1 text-center lg:text-left">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-white/90 text-xs font-medium mb-4 backdrop-blur-sm">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Plataforma Digital del Estado Peruano
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-3">
+            Buscador Público
+          </h1>
+          <p class="text-base sm:text-lg text-gob-300 max-w-xl mx-auto lg:mx-0 mb-6">
+            Encuentra trámites, servicios, normas y publicaciones del Estado peruano en un solo lugar.
+          </p>
+
+          <!-- Search -->
+          <form id="searchForm" class="max-w-2xl mx-auto lg:mx-0" autocomplete="off" onsubmit="return false;">
+            <div class="relative flex items-center">
+              <svg class="absolute left-4 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input
+                id="searchInput"
+                type="text"
+                class="w-full pl-12 pr-36 sm:pr-40 py-3.5 sm:py-4 text-base sm:text-lg text-gob-text bg-white border-2 border-transparent rounded-xl shadow-xl focus:border-white/80 focus:ring-4 focus:ring-white/20 outline-none transition-all"
+                placeholder="Busca trámites, servicios, noticias, normas..."
+              >
+              <button type="submit" class="absolute right-1.5 inline-flex items-center gap-1.5 px-5 py-2 bg-gob-800 text-white font-semibold rounded-lg hover:bg-[#8A0707] active:scale-[0.97] transition-all shadow-md">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <span>Buscar</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Quick links -->
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2 mt-4">
+            <span class="text-xs text-gob-300">Ejemplos:</span>
+            <button type="button" class="px-3 py-1 text-xs font-medium bg-white/15 text-white hover:bg-white/25 rounded-full transition-colors cursor-pointer backdrop-blur-sm" onclick="setSearch('DNI electrónico')">DNI electrónico</button>
+            <button type="button" class="px-3 py-1 text-xs font-medium bg-white/15 text-white hover:bg-white/25 rounded-full transition-colors cursor-pointer backdrop-blur-sm" onclick="setSearch('brevete')">brevete</button>
+            <button type="button" class="px-3 py-1 text-xs font-medium bg-white/15 text-white hover:bg-white/25 rounded-full transition-colors cursor-pointer backdrop-blur-sm" onclick="setSearch('salud')">salud</button>
+            <button type="button" class="px-3 py-1 text-xs font-medium bg-white/15 text-white hover:bg-white/25 rounded-full transition-colors cursor-pointer backdrop-blur-sm" onclick="setSearch('becas')">becas</button>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   </section>
+
+  <!-- Separator wave -->
+  <div class="relative h-8 bg-gradient-to-b from-gob-800 to-white -mt-1">
+    <svg class="absolute bottom-0 w-full h-8 text-white" viewBox="0 0 1440 32" preserveAspectRatio="none">
+      <path d="M0,16 C360,32 1080,0 1440,16 L1440,32 L0,32 Z" fill="currentColor"/>
+    </svg>
+  </div>
 
   <!-- ============ MAIN CONTENT ============ -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
