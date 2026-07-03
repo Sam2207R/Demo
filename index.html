@@ -170,6 +170,16 @@
             </select>
           </div>
 
+          <!-- FAVORITOS -->
+          <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gob-text uppercase tracking-wider mb-3">Favoritos</h3>
+            <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+              <input type="checkbox" id="favoritesOnly" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+              <span class="text-sm text-gray-700">Mostrar solo favoritos</span>
+              <span id="favoritesCount" class="ml-auto text-xs text-gray-400 font-medium"></span>
+            </label>
+          </div>
+
           <!-- LIMPIAR -->
           <button id="clearFilters" class="w-full px-4 py-2.5 text-sm font-semibold text-gob-800 bg-gob-200 hover:bg-gob-300 rounded-lg transition-colors cursor-pointer">
             Limpiar filtros
@@ -193,10 +203,16 @@
 
         <!-- Results header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-          <p class="text-sm text-gray-600">
-            <span id="resultsCount" class="font-semibold text-gob-text"></span>
-            <span id="resultsLabel">resultados</span>
-          </p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <p class="text-sm text-gray-600">
+              <span id="resultsCount" class="font-semibold text-gob-text"></span>
+              <span id="resultsLabel">resultados</span>
+            </p>
+            <span id="favoritesBadge" class="hidden items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full bg-gob-200 text-gob-800">
+              <svg class="w-3 h-3 fill-gob-800" viewBox="0 0 24 24" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              <span id="favoritesBadgeCount">0</span>
+            </span>
+          </div>
           <div class="flex items-center gap-2 text-sm text-gray-500">
             <span class="hidden sm:inline">Mostrando</span>
             <select id="perPage" class="px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-gob-800 outline-none bg-white">
@@ -277,6 +293,13 @@
     ].map(r => ({ ...r, dateObj: new Date(r.date) }));
 
     // ---- STATE ----
+    const STORAGE_KEY = 'buscador_favoritos';
+    function loadFavorites() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+    }
+    function saveFavorites(ids) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+    }
     let state = {
       search: '',
       categories: [],
@@ -286,7 +309,20 @@
       sort: 'relevance',
       page: 1,
       perPage: 10,
+      favorites: loadFavorites(),
+      favoritesOnly: false,
     };
+
+    function toggleFavorite(id) {
+      const idx = state.favorites.indexOf(id);
+      if (idx === -1) state.favorites.push(id);
+      else state.favorites.splice(idx, 1);
+      saveFavorites(state.favorites);
+      render();
+    }
+    function isFavorite(id) {
+      return state.favorites.includes(id);
+    }
 
     // ---- DOM REFS ----
     const $ = id => document.getElementById(id);
@@ -307,6 +343,10 @@
     const dateFrom = $('dateFrom');
     const dateTo = $('dateTo');
     const perPage = $('perPage');
+    const favoritesBadge = $('favoritesBadge');
+    const favoritesBadgeCount = $('favoritesBadgeCount');
+    const favoritesOnlyChk = $('favoritesOnly');
+    const favoritesCountLabel = $('favoritesCount');
 
     // ---- FILTER ----
     function getFilters() {
@@ -319,11 +359,13 @@
         dateFrom: dateFrom.value,
         dateTo: dateTo.value,
         sort: sortBy.value,
+        favoritesOnly: favoritesOnlyChk?.checked || false,
       };
     }
 
     function applyFilters(data, filters) {
       let filtered = data.filter(item => {
+        if (filters.favoritesOnly && !state.favorites.includes(item.id)) return false;
         if (filters.search) {
           const q = filters.search;
           const inTitle = item.title.toLowerCase().includes(q);
@@ -368,6 +410,16 @@
       resultsCount.textContent = total;
       resultsLabel.textContent = total === 1 ? 'resultado' : 'resultados';
 
+      // Favorites badge
+      const favCount = state.favorites.length;
+      if (favCount > 0) {
+        favoritesBadge.classList.remove('hidden');
+        favoritesBadgeCount.textContent = favCount;
+      } else {
+        favoritesBadge.classList.add('hidden');
+      }
+      if (favoritesCountLabel) favoritesCountLabel.textContent = favCount > 0 ? `(${favCount})` : '';
+
       // Cards
       if (pageItems.length === 0) {
         resultsContainer.classList.add('hidden');
@@ -376,12 +428,17 @@
         resultsContainer.classList.remove('hidden');
         emptyState.classList.add('hidden');
         resultsContainer.innerHTML = pageItems.map((item, i) => `
-          <article class="result-enter bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-gob-300 transition-all" style="animation-delay:${i * 50}ms">
-            <div class="flex items-start gap-3 mb-2">
+          <article class="result-enter relative bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-gob-300 transition-all" style="animation-delay:${i * 50}ms">
+            <button type="button" class="absolute top-3 right-3 p-1.5 rounded-full hover:bg-gray-100 transition-colors cursor-pointer group" onclick="toggleFavorite(${item.id})" aria-label="${isFavorite(item.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}">
+              <svg class="w-5 h-5 transition-all ${isFavorite(item.id) ? 'text-gob-800 fill-gob-800 scale-110' : 'text-gray-300 fill-transparent group-hover:text-gray-400'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </button>
+            <div class="flex items-start gap-3 mb-2 pr-8">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gob-200 text-gob-800 flex-shrink-0 mt-0.5">${item.category}</span>
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex-shrink-0 mt-0.5">${item.type}</span>
             </div>
-            <a href="#" class="block text-base sm:text-lg font-semibold text-gob-800 hover:text-gob-700 hover:underline leading-snug mb-1.5 transition-colors">${item.title}</a>
+            <a href="#" class="block text-base sm:text-lg font-semibold text-gob-800 hover:text-gob-700 hover:underline leading-snug mb-1.5 transition-colors pr-8">${item.title}</a>
             <p class="text-sm text-gray-600 leading-relaxed mb-3">${item.description}</p>
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
               <span class="flex items-center gap-1">
@@ -400,6 +457,7 @@
       // Active tags
       const tags = [];
       if (filters.search) tags.push(`Búsqueda: "${filters.search}"`);
+      if (filters.favoritesOnly) tags.push('Favoritos');
       filters.categories.forEach(c => tags.push(c));
       filters.types.forEach(t => tags.push(t));
       if (filters.dateFrom || filters.dateTo) {
@@ -407,9 +465,15 @@
         tags.push(`Fecha: ${d}`);
       }
       if (tags.length) {
-        activeTags.innerHTML = tags.map(t => `
-          <span class="inline-flex items-center gap-1 px-3 py-1 bg-gob-200 text-gob-800 text-xs font-medium rounded-full">${t}</span>
-        `).join('');
+        activeTags.innerHTML = tags.map(t => {
+          if (t === 'Favoritos') {
+            return `<span class="inline-flex items-center gap-1 px-3 py-1 bg-gob-200 text-gob-800 text-xs font-medium rounded-full">
+              <svg class="w-3 h-3 fill-gob-800" viewBox="0 0 24 24" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              ${t}
+            </span>`;
+          }
+          return `<span class="inline-flex items-center gap-1 px-3 py-1 bg-gob-200 text-gob-800 text-xs font-medium rounded-full">${t}</span>`;
+        }).join('');
       } else {
         activeTags.innerHTML = '';
       }
@@ -477,6 +541,7 @@
     dateTo.addEventListener('change', () => { state.page = 1; render(); });
     sortBy.addEventListener('change', () => { state.page = 1; render(); });
     perPage.addEventListener('change', () => { state.page = 1; render(); });
+    favoritesOnlyChk.addEventListener('change', () => { state.page = 1; render(); });
 
     clearBtn.addEventListener('click', () => {
       searchInput.value = '';
@@ -484,6 +549,7 @@
       dateFrom.value = '';
       dateTo.value = '';
       sortBy.value = 'relevance';
+      favoritesOnlyChk.checked = false;
       state.page = 1;
       render();
     });
