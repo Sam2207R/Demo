@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es-PE">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscador Público</title>
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-gob-800: #BF0909;
+      --color-gob-700: #DC362E;
+      --color-gob-600: #E46962;
+      --color-gob-500: #EB918E;
+      --color-gob-400: #F2B8B5;
+      --color-gob-300: #F9DEDC;
+      --color-gob-200: #FCEEEE;
+      --color-gob-text: #0B0C0C;
+    }
+    @layer base {
+      body { font-family: 'Inter', system-ui, sans-serif; color: var(--color-gob-text); }
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .result-enter { animation: fadeIn 0.3s ease-out forwards; }
+    .sidebar-overlay { transition: opacity 0.3s ease; }
+    .sidebar-panel { transition: transform 0.3s ease; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="bg-gob-800 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14 sm:h-16">
+        <a href="#" class="flex items-center gap-2 sm:gap-3 group">
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          <div class="flex flex-col">
+            <span class="text-base sm:text-lg font-bold leading-tight tracking-tight">Buscador Público</span>
+            <span class="text-xs text-gob-300 leading-tight hidden sm:block">Plataforma Digital del Estado</span>
+          </div>
+        </a>
+        <nav class="flex items-center gap-1 sm:gap-2">
+          <a href="#" class="hidden sm:inline-flex px-3 py-1.5 text-sm font-medium text-gob-200 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Inicio</a>
+          <a href="#" class="hidden sm:inline-flex px-3 py-1.5 text-sm font-medium text-gob-200 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Servicios</a>
+          <a href="#" class="hidden sm:inline-flex px-3 py-1.5 text-sm font-medium text-gob-200 hover:text-white hover:bg-white/10 rounded-lg transition-colors">Estado</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ SEARCH BAR ============ -->
+  <section class="bg-gradient-to-b from-gob-200 to-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <form id="searchForm" class="max-w-3xl mx-auto" autocomplete="off" onsubmit="return false;">
+        <div class="relative flex items-center">
+          <svg class="absolute left-4 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            id="searchInput"
+            type="text"
+            class="w-full pl-12 pr-4 py-3.5 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-xl shadow-sm focus:border-gob-800 focus:ring-2 focus:ring-gob-800/20 outline-none transition-all"
+            placeholder="Busca trámites, servicios, noticias, normas..."
+          >
+          <button type="submit" class="absolute right-2 inline-flex items-center gap-1.5 px-5 py-2 bg-gob-800 text-white font-semibold rounded-lg hover:bg-[#A00808] active:scale-[0.97] transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <span class="hidden sm:inline">Buscar</span>
+          </button>
+        </div>
+        <p class="mt-2 text-xs text-gray-500 text-center sm:text-left">Ej: <button type="button" class="text-gob-800 underline hover:text-gob-700 cursor-pointer" onclick="setSearch('DNI electrónico')">DNI electrónico</button>, <button type="button" class="text-gob-800 underline hover:text-gob-700 cursor-pointer" onclick="setSearch('brevete')">brevete</button>, <button type="button" class="text-gob-800 underline hover:text-gob-700 cursor-pointer" onclick="setSearch('salud')">salud</button></p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex gap-6 lg:gap-8">
+
+      <!-- ============ SIDEBAR ============ -->
+      <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-80 lg:w-72 xl:w-80 bg-white lg:bg-transparent shadow-xl lg:shadow-none -translate-x-full lg:translate-x-0 sidebar-panel">
+        <div class="h-full lg:h-auto overflow-y-auto p-6 lg:p-0">
+          <!-- Mobile close -->
+          <div class="flex items-center justify-between mb-4 lg:hidden">
+            <h2 class="text-lg font-bold text-gob-text">Filtros</h2>
+            <button id="sidebarClose" class="p-2 text-gray-500 hover:text-gob-text rounded-lg hover:bg-gray-100 cursor-pointer" aria-label="Cerrar filtros">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- CATEGORÍA -->
+          <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gob-text uppercase tracking-wider mb-3">Categoría</h3>
+            <div class="space-y-2" id="categoryFilters">
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="Salud" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">Salud</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="Educación" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">Educación</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="Trabajo" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">Trabajo</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="Normas" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">Normas</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="General" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">General</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- TIPO -->
+          <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gob-text uppercase tracking-wider mb-3">Tipo</h3>
+            <div class="space-y-2" id="typeFilters">
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="Servicio" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">Servicio</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="Informe" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">Informe</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="Publicación" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">Publicación</span>
+              </label>
+              <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                <input type="checkbox" value="Norma" class="w-4 h-4 rounded border-gray-300 text-gob-800 focus:ring-gob-800/30 cursor-pointer">
+                <span class="text-sm text-gray-700">Norma</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- FECHA -->
+          <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gob-text uppercase tracking-wider mb-3">Rango de fecha</h3>
+            <div class="space-y-2">
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Desde</label>
+                <input type="date" id="dateFrom" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-gob-800 focus:ring-1 focus:ring-gob-800/20 outline-none transition-colors">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Hasta</label>
+                <input type="date" id="dateTo" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-gob-800 focus:ring-1 focus:ring-gob-800/20 outline-none transition-colors">
+              </div>
+            </div>
+          </div>
+
+          <!-- ORDENAR -->
+          <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gob-text uppercase tracking-wider mb-3">Ordenar por</h3>
+            <select id="sortBy" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:border-gob-800 focus:ring-1 focus:ring-gob-800/20 outline-none transition-colors bg-white">
+              <option value="relevance">Relevancia</option>
+              <option value="date-desc">Más reciente</option>
+              <option value="date-asc">Más antiguo</option>
+              <option value="title">A-Z</option>
+            </select>
+          </div>
+
+          <!-- LIMPIAR -->
+          <button id="clearFilters" class="w-full px-4 py-2.5 text-sm font-semibold text-gob-800 bg-gob-200 hover:bg-gob-300 rounded-lg transition-colors cursor-pointer">
+            Limpiar filtros
+          </button>
+        </div>
+      </aside>
+
+      <!-- Overlay for mobile -->
+      <div id="sidebarOverlay" class="fixed inset-0 z-30 bg-black/40 hidden sidebar-overlay lg:hidden"></div>
+
+      <!-- Mobile filter toggle -->
+      <button id="sidebarToggle" class="fixed bottom-6 right-6 z-30 lg:hidden flex items-center gap-2 px-4 py-3 bg-gob-800 text-white font-semibold rounded-full shadow-lg hover:bg-[#A00808] active:scale-95 transition-all cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+        </svg>
+        <span>Filtros</span>
+      </button>
+
+      <!-- ============ RESULTS ============ -->
+      <section class="flex-1 min-w-0">
+
+        <!-- Results header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <p class="text-sm text-gray-600">
+            <span id="resultsCount" class="font-semibold text-gob-text"></span>
+            <span id="resultsLabel">resultados</span>
+          </p>
+          <div class="flex items-center gap-2 text-sm text-gray-500">
+            <span class="hidden sm:inline">Mostrando</span>
+            <select id="perPage" class="px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-gob-800 outline-none bg-white">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+            </select>
+            <span>por página</span>
+          </div>
+        </div>
+
+        <!-- Active filters tags -->
+        <div id="activeTags" class="flex flex-wrap gap-2 mb-4 min-h-[2rem]"></div>
+
+        <!-- Results list -->
+        <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Rendered by JS -->
+        </div>
+
+        <!-- Empty state -->
+        <div id="emptyState" class="hidden text-center py-16">
+          <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-500 mb-1">Sin resultados</h3>
+          <p class="text-sm text-gray-400">Intenta ajustar o limpiar los filtros</p>
+          <button id="emptyClearBtn" class="mt-4 px-4 py-2 text-sm font-medium text-gob-800 bg-gob-200 hover:bg-gob-300 rounded-lg transition-colors cursor-pointer">Limpiar filtros</button>
+        </div>
+
+        <!-- Pagination -->
+        <nav id="pagination" class="mt-8 flex items-center justify-center gap-1">
+          <!-- Rendered by JS -->
+        </nav>
+      </section>
+    </div>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="border-t border-gray-200 bg-gray-50 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <svg class="w-5 h-5 text-gob-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          <span>Buscador Público</span>
+        </div>
+        <div class="flex items-center gap-4 text-xs text-gray-400">
+          <a href="#" class="hover:text-gray-600 transition-colors">Acerca de</a>
+          <a href="#" class="hover:text-gray-600 transition-colors">Términos</a>
+          <a href="#" class="hover:text-gray-600 transition-colors">Privacidad</a>
+          <a href="#" class="hover:text-gray-600 transition-colors">Accesibilidad</a>
+          <span>&copy; 2026 Estado Peruano</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ JAVASCRIPT ============ -->
+  <script>
+    // ---- DATA ----
+    const allResults = [
+      { id: 1, title: 'Acceder a los servicios de salud en Minsa Digital', description: 'Plataforma digital del Ministerio de Salud que permite acceder a servicios de atención médica, historial clínico, citas y más desde cualquier dispositivo.', category: 'Salud', type: 'Servicio', date: '2026-07-01', tags: ['salud', 'minsa', 'digital'] },
+      { id: 2, title: 'Obtener el DNI electrónico por primera vez', description: 'Trámite para obtener el Documento Nacional de Identidad electrónico, el cual permite realizar firmas digitales y trámites en línea con validez legal.', category: 'General', type: 'Servicio', date: '2026-06-28', tags: ['dni', 'identidad', 'electrónico'] },
+      { id: 3, title: 'Postular a becas de educación superior', description: 'Convocatoria de becas integrales para estudios de pregrado y posgrado en universidades nacionales e internacionales.', category: 'Educación', type: 'Servicio', date: '2026-06-25', tags: ['becas', 'educación', 'postulación'] },
+      { id: 4, title: 'Solicitar el certificado de antecedentes policiales', description: 'Obtén tu certificado de antecedentes policiales en línea de manera rápida y segura para trámites laborales y migratorios.', category: 'General', type: 'Servicio', date: '2026-06-22', tags: ['antecedentes', 'policiales', 'certificado'] },
+      { id: 5, title: 'Informe sobre la evolución del empleo formal 2026', description: 'Análisis detallado de la evolución del empleo formal en el sector privado durante el primer semestre del año.', category: 'Trabajo', type: 'Informe', date: '2026-06-20', tags: ['empleo', 'trabajo', 'informe'] },
+      { id: 6, title: 'Norma técnica de salud para establecimientos', description: 'Disposiciones técnicas y administrativas para el funcionamiento de establecimientos de salud a nivel nacional.', category: 'Salud', type: 'Norma', date: '2026-06-18', tags: ['norma', 'salud', 'establecimientos'] },
+      { id: 7, title: 'Guía para la matrícula escolar 2026', description: 'Procedimientos y requisitos para la matrícula en instituciones educativas públicas a nivel nacional para el año escolar.', category: 'Educación', type: 'Publicación', date: '2026-06-15', tags: ['matrícula', 'escolar', 'educación'] },
+      { id: 8, title: 'Decreto Supremo que modifica la Ley de Contrataciones', description: 'Modificaciones al reglamento de la Ley de Contrataciones del Estado para optimizar los procesos de adquisición pública.', category: 'Normas', type: 'Norma', date: '2026-06-12', tags: ['contrataciones', 'ley', 'decreto'] },
+      { id: 9, title: 'Resultados del concurso público docente 2026', description: 'Publicación de resultados finales del concurso de acceso a cargos públicos docentes en educación básica regular.', category: 'Educación', type: 'Informe', date: '2026-06-10', tags: ['docente', 'concurso', 'resultados'] },
+      { id: 10, title: 'Plataforma de consulta de multas de tránsito', description: 'Consulta y pago de multas de tránsito a nivel nacional. Verifica tus infracciones y realiza el pago en línea.', category: 'General', type: 'Servicio', date: '2026-06-08', tags: ['multas', 'tránsito', 'consulta'] },
+      { id: 11, title: 'Régimen laboral especial para microempresas', description: 'Guía informativa sobre los derechos y obligaciones laborales bajo el régimen especial de micro y pequeñas empresas.', category: 'Trabajo', type: 'Publicación', date: '2026-06-05', tags: ['laboral', 'microempresa', 'régimen'] },
+      { id: 12, title: 'Campaña de vacunación nacional 2026', description: 'Calendario y puntos de vacunación a nivel nacional. Campaña de inmunización contra diversas enfermedades.', category: 'Salud', type: 'Servicio', date: '2026-06-03', tags: ['vacunación', 'campaña', 'salud'] },
+      { id: 13, title: 'Resolución sobre teletrabajo en el sector público', description: 'Lineamientos para la implementación del teletrabajo en entidades de la administración pública a nivel nacional.', category: 'Normas', type: 'Norma', date: '2026-06-01', tags: ['teletrabajo', 'público', 'resolución'] },
+      { id: 14, title: 'Directiva para la prevención de desastres naturales', description: 'Directiva nacional que establece medidas de preparación y respuesta ante desastres naturales para gobiernos regionales.', category: 'General', type: 'Directiva', date: '2026-05-28', tags: ['desastres', 'prevención', 'directiva'] },
+      { id: 15, title: 'Boletín estadístico de educación inicial', description: 'Compendio estadístico con indicadores de cobertura, matrícula y logros de aprendizaje en educación inicial.', category: 'Educación', type: 'Publicación', date: '2026-05-25', tags: ['estadístico', 'educación', 'inicial'] },
+    ].map(r => ({ ...r, dateObj: new Date(r.date) }));
+
+    // ---- STATE ----
+    let state = {
+      search: '',
+      categories: [],
+      types: [],
+      dateFrom: '',
+      dateTo: '',
+      sort: 'relevance',
+      page: 1,
+      perPage: 10,
+    };
+
+    // ---- DOM REFS ----
+    const $ = id => document.getElementById(id);
+    const searchInput = $('searchInput');
+    const resultsContainer = $('resultsContainer');
+    const resultsCount = $('resultsCount');
+    const resultsLabel = $('resultsLabel');
+    const emptyState = $('emptyState');
+    const emptyClearBtn = $('emptyClearBtn');
+    const pagination = $('pagination');
+    const activeTags = $('activeTags');
+    const sidebar = $('sidebar');
+    const sidebarOverlay = $('sidebarOverlay');
+    const sidebarToggle = $('sidebarToggle');
+    const sidebarClose = $('sidebarClose');
+    const clearBtn = $('clearFilters');
+    const sortBy = $('sortBy');
+    const dateFrom = $('dateFrom');
+    const dateTo = $('dateTo');
+    const perPage = $('perPage');
+
+    // ---- FILTER ----
+    function getFilters() {
+      const cats = [...document.querySelectorAll('#categoryFilters input:checked')].map(c => c.value);
+      const types = [...document.querySelectorAll('#typeFilters input:checked')].map(c => c.value);
+      return {
+        search: searchInput.value.trim().toLowerCase(),
+        categories: cats,
+        types: types,
+        dateFrom: dateFrom.value,
+        dateTo: dateTo.value,
+        sort: sortBy.value,
+      };
+    }
+
+    function applyFilters(data, filters) {
+      let filtered = data.filter(item => {
+        if (filters.search) {
+          const q = filters.search;
+          const inTitle = item.title.toLowerCase().includes(q);
+          const inDesc = item.description.toLowerCase().includes(q);
+          const inTag = item.tags.some(t => t.includes(q));
+          if (!inTitle && !inDesc && !inTag) return false;
+        }
+        if (filters.categories.length && !filters.categories.includes(item.category)) return false;
+        if (filters.types.length && !filters.types.includes(item.type)) return false;
+        if (filters.dateFrom && item.dateObj < new Date(filters.dateFrom + 'T00:00:00')) return false;
+        if (filters.dateTo) {
+          const end = new Date(filters.dateTo + 'T23:59:59');
+          if (item.dateObj > end) return false;
+        }
+        return true;
+      });
+
+      // Sort
+      switch (filters.sort) {
+        case 'date-desc': filtered.sort((a, b) => b.dateObj - a.dateObj); break;
+        case 'date-asc': filtered.sort((a, b) => a.dateObj - b.dateObj); break;
+        case 'title': filtered.sort((a, b) => a.title.localeCompare(b.title)); break;
+        default: break;
+      }
+      return filtered;
+    }
+
+    // ---- RENDER ----
+    function render() {
+      const filters = getFilters();
+      Object.assign(state, filters);
+      state.perPage = parseInt(perPage.value) || 10;
+
+      const filtered = applyFilters(allResults, state);
+      const total = filtered.length;
+      const totalPages = Math.ceil(total / state.perPage) || 1;
+      if (state.page > totalPages) state.page = totalPages;
+      const start = (state.page - 1) * state.perPage;
+      const pageItems = filtered.slice(start, start + state.perPage);
+
+      // Results count
+      resultsCount.textContent = total;
+      resultsLabel.textContent = total === 1 ? 'resultado' : 'resultados';
+
+      // Cards
+      if (pageItems.length === 0) {
+        resultsContainer.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+      } else {
+        resultsContainer.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+        resultsContainer.innerHTML = pageItems.map((item, i) => `
+          <article class="result-enter bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md hover:border-gob-300 transition-all" style="animation-delay:${i * 50}ms">
+            <div class="flex items-start gap-3 mb-2">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gob-200 text-gob-800 flex-shrink-0 mt-0.5">${item.category}</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex-shrink-0 mt-0.5">${item.type}</span>
+            </div>
+            <a href="#" class="block text-base sm:text-lg font-semibold text-gob-800 hover:text-gob-700 hover:underline leading-snug mb-1.5 transition-colors">${item.title}</a>
+            <p class="text-sm text-gray-600 leading-relaxed mb-3">${item.description}</p>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                ${formatDate(item.date)}
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                ${item.tags.slice(0, 3).join(', ')}
+              </span>
+            </div>
+          </article>
+        `).join('');
+      }
+
+      // Active tags
+      const tags = [];
+      if (filters.search) tags.push(`Búsqueda: "${filters.search}"`);
+      filters.categories.forEach(c => tags.push(c));
+      filters.types.forEach(t => tags.push(t));
+      if (filters.dateFrom || filters.dateTo) {
+        const d = [filters.dateFrom || '...', filters.dateTo || '...'].join(' - ');
+        tags.push(`Fecha: ${d}`);
+      }
+      if (tags.length) {
+        activeTags.innerHTML = tags.map(t => `
+          <span class="inline-flex items-center gap-1 px-3 py-1 bg-gob-200 text-gob-800 text-xs font-medium rounded-full">${t}</span>
+        `).join('');
+      } else {
+        activeTags.innerHTML = '';
+      }
+
+      // Pagination
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+      }
+      const p = state.page;
+      let html = '';
+
+      const btn = (label, page, disabled = false, active = false) =>
+        `<button class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors cursor-pointer ${active ? 'bg-gob-800 text-white' : disabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}" ${disabled ? 'disabled' : `onclick="goToPage(${page})"`}>${label}</button>`;
+
+      html += btn('‹ Anterior', p - 1, p === 1);
+
+      const range = 2;
+      const startP = Math.max(1, p - range);
+      const endP = Math.min(totalPages, p + range);
+      if (startP > 1) { html += btn(1, 1); if (startP > 2) html += '<span class="px-2 text-gray-400">...</span>'; }
+      for (let i = startP; i <= endP; i++) html += btn(i, i, false, i === p);
+      if (endP < totalPages) { if (endP < totalPages - 1) html += '<span class="px-2 text-gray-400">...</span>'; html += btn(totalPages, totalPages); }
+
+      html += btn('Siguiente ›', p + 1, p === totalPages);
+      pagination.innerHTML = html;
+    }
+
+    function goToPage(n) {
+      state.page = n;
+      render();
+      window.scrollTo({ top: 200, behavior: 'smooth' });
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    // ---- SIDEBAR TOGGLE ----
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebarOverlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebarOverlay.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+    sidebarToggle.addEventListener('click', openSidebar);
+    sidebarClose.addEventListener('click', closeSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    // ---- EVENTS ----
+    searchInput.addEventListener('input', () => { state.page = 1; render(); });
+    document.querySelectorAll('#categoryFilters input, #typeFilters input').forEach(el => {
+      el.addEventListener('change', () => { state.page = 1; render(); });
+    });
+    dateFrom.addEventListener('change', () => { state.page = 1; render(); });
+    dateTo.addEventListener('change', () => { state.page = 1; render(); });
+    sortBy.addEventListener('change', () => { state.page = 1; render(); });
+    perPage.addEventListener('change', () => { state.page = 1; render(); });
+
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      document.querySelectorAll('#categoryFilters input, #typeFilters input').forEach(c => c.checked = false);
+      dateFrom.value = '';
+      dateTo.value = '';
+      sortBy.value = 'relevance';
+      state.page = 1;
+      render();
+    });
+    emptyClearBtn.addEventListener('click', () => clearBtn.click());
+
+    function setSearch(q) {
+      searchInput.value = q;
+      state.page = 1;
+      render();
+    }
+
+    // ---- KEYBOARD ----
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !sidebar.classList.contains('-translate-x-full')) closeSidebar();
+    });
+
+    // ---- INIT ----
+    render();
+  </script>
+</body>
+</html>
